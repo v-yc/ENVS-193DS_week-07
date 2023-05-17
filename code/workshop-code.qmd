@@ -1,0 +1,101 @@
+---
+title: "workshop-code"
+format: html
+execute: 
+  warning: false
+  message: false
+---
+
+## Setup
+
+```{r libraries}
+library(tidyverse)
+library(here)
+library(lterdatasampler)
+library(performance) # use to check performance of model (evaluate normality, heterostedasticity)
+library(broom) # put all outputs from model into table
+library(flextable)
+library(ggeffects)
+library(car)
+library(naniar) # look at missing data
+```
+
+# Linear models
+
+How does stem length _predict_ stem dry mass?
+
+```{r filtering data}
+
+maples_data <- hbr_maples %>% 
+  
+  # only include stuff from 2003 and Reference watershed
+  filter(year == 2003 & watershed == "Reference")
+
+```
+
+Visualizing missing data:
+
+```{r missing-data-vis}
+gg_miss_var(maples_data)
+```
+
+Create an exploratory data visualization:
+
+```{r explore-data-vis}
+
+ggplot(data = maples_data, aes(x = stem_length, y = stem_dry_mass)) +
+  geom_point()
+
+```
+
+Let's try a model:
+
+```{r linear-model-maples}
+
+maples_model <- lm(stem_dry_mass ~ stem_length, data = maples_data)
+
+# intercept = 0.0070033; slope = 0.0001958
+maples_model
+
+```
+Check assumptions:
+
+1. linear relationship between variables: yes! (used the exploratory data visualization to check that)
+2. independence of errors: yes! (making that assumption based on how data were collected)
+3. homoskedasticity of errors: yes! (making that decision from residuals vs  fitted plot/scale-location plots)
+4. normally distributed errors: yes! (looking at QQ plot of residuals)
+
+```{r checking-assumptions}
+
+# Write "plot(maples_model)" in console to get 4 diagnostic plots
+# Plot 1: residuals vs fitted plot (checks for homoscedasticity of residuals)
+# Plot 2: QQ plot (are residuals normally distributed?)
+# Plot 3: scale-location plot (similar to plot 1 but square root of residuals)
+# Plot 4: Residuals vs leverage plot (looks for outliers)
+
+# makes the viewer pane show a 2x2 grid of plots
+# format: par(mfrow = c(number of rows, number of columns))
+par(mfrow = c(2,2))
+plot(maples_model)
+
+```
+
+turn off the 2x2 grid:
+
+```{r turning-off-the-grid}
+
+dev.off()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
