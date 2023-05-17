@@ -84,7 +84,7 @@ turn off the 2x2 grid:
 
 ```{r turning-off-the-grid, results = FALSE}
 
-dev.off()
+# dev.off()
 
 ```
 
