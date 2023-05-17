@@ -89,9 +89,83 @@ turn off the 2x2 grid:
 ```
 
 
+# Putting things together to communicate
 
+## model predictions
 
+```{r pulling out predictions}
 
+# ggpredict is from ggeffects package
+predictions <- ggpredict(maples_model, terms = "stem_length") # terms = predictor variable
+
+predictions
+```
+plot predictions
+
+```{r plotting-predictions}
+
+plot_predictions <- ggplot(data = maples_data, 
+                           aes(x = stem_length, y = stem_dry_mass)) +
+  
+  # first plot the underlying data from maples_data
+  geom_point() + 
+  
+  # then plot the predictions
+  geom_line(data = predictions, 
+            aes(x = x, y = predicted), 
+            color = "blue", linewidth = 1) +
+  
+  # then plot the 95% confidence interval from ggpredict
+  # alpha is making the ribbon more transparent
+  geom_ribbon(data = predictions, 
+              aes(x = x, y = predicted, ymin = conf.low, ymax = conf.high), 
+              alpha = 0.2) +
+  
+  # theme and meaningful labels
+  theme_bw() +
+  labs(x = "Stem length (mm)",
+       y = "Stem dry mass (g)")
+
+plot_predictions
+
+```
+
+## create tables
+
+```{r model-summary-table}
+
+# store the model summary as an object
+model_summary <- summary(maples_model)
+
+# store the ANOVA table as an object
+# anova(): special function to get analysis of variance tables for a model
+model_squares <- anova(maples_model)
+
+model_summary
+```
+
+making a table
+
+```{r}
+
+# tidy is a function in broom that pulls out stuff from anova table into dataframe
+# can use this to communicate where the R2 value comes from (smth about ratio of sumsq)
+model_squares_table <- tidy(model_squares) %>% 
+  
+  # for tiny p-values, just say it's less than 0.001 rather than showing the exact number
+  mutate(p.value = case_when(
+    p.value < 0.001 ~ "< 0.001")) %>% 
+  
+  # flextable makes it from dataframe to table
+  flextable() %>% 
+  
+  # change header labels
+  set_header_labels(df = "Degrees of freedom", 
+                    sumsq = "Sum of squares")
+
+model_squares_table
+
+```
 
 
 

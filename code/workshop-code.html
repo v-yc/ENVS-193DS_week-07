@@ -96,6 +96,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="workshop-code_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="workshop-code_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="workshop-code_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="workshop-code_files/libs/tabwid-1.1.3/tabwid.css" rel="stylesheet">
+<script src="workshop-code_files/libs/tabwid-1.1.3/tabwid.js"></script>
 
 
 </head>
@@ -203,6 +205,117 @@ Coefficients:
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># dev.off()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="putting-things-together-to-communicate" class="level1">
+<h1>Putting things together to communicate</h1>
+<section id="model-predictions" class="level2">
+<h2 class="anchored" data-anchor-id="model-predictions">model predictions</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ggpredict is from ggeffects package</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>predictions <span class="ot">&lt;-</span> <span class="fu">ggpredict</span>(maples_model, <span class="at">terms =</span> <span class="st">"stem_length"</span>) <span class="co"># terms = predictor variable</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>predictions</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Predicted values of stem_dry_mass
+
+stem_length | Predicted |       95% CI
+--------------------------------------
+         50 |      0.02 | [0.01, 0.02]
+         60 |      0.02 | [0.02, 0.02]
+         70 |      0.02 | [0.02, 0.02]
+         80 |      0.02 | [0.02, 0.02]
+         90 |      0.02 | [0.02, 0.03]
+        100 |      0.03 | [0.02, 0.03]
+        110 |      0.03 | [0.03, 0.03]
+        120 |      0.03 | [0.03, 0.03]</code></pre>
+</div>
+</div>
+<p>plot predictions</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>plot_predictions <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> maples_data, </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">aes</span>(<span class="at">x =</span> stem_length, <span class="at">y =</span> stem_dry_mass)) <span class="sc">+</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># first plot the underlying data from maples_data</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># then plot the predictions</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> predictions, </span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>            <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> predicted), </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">"blue"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># then plot the 95% confidence interval from ggpredict</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># alpha is making the ribbon more transparent</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="at">data =</span> predictions, </span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>              <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> predicted, <span class="at">ymin =</span> conf.low, <span class="at">ymax =</span> conf.high), </span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>              <span class="at">alpha =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># theme and meaningful labels</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Stem length (mm)"</span>,</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Stem dry mass (g)"</span>)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>plot_predictions</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="workshop-code_files/figure-html/plotting-predictions-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="create-tables" class="level2">
+<h2 class="anchored" data-anchor-id="create-tables">create tables</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># store the model summary as an object</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>model_summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(maples_model)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># store the ANOVA table as an object</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># anova(): special function to get analysis of variance tables for a model</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>model_squares <span class="ot">&lt;-</span> <span class="fu">anova</span>(maples_model)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>model_summary</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = stem_dry_mass ~ stem_length, data = maples_data)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-0.0111253 -0.0039117 -0.0009091  0.0040911  0.0164587 
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 7.003e-03  3.212e-03   2.180   0.0312 *  
+stem_length 1.958e-04  3.909e-05   5.009 1.94e-06 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.005944 on 118 degrees of freedom
+Multiple R-squared:  0.1753,    Adjusted R-squared:  0.1683 
+F-statistic: 25.09 on 1 and 118 DF,  p-value: 1.94e-06</code></pre>
+</div>
+</div>
+<p>making a table</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tidy is a function in broom that pulls out stuff from anova table into dataframe</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># can use this to communicate where the R2 value comes from (smth about ratio of sumsq)</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>model_squares_table <span class="ot">&lt;-</span> <span class="fu">tidy</span>(model_squares) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># for tiny p-values, just say it's less than 0.001 rather than showing the exact number</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p.value =</span> <span class="fu">case_when</span>(</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    p.value <span class="sc">&lt;</span> <span class="fl">0.001</span> <span class="sc">~</span> <span class="st">"&lt; 0.001"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># flextable makes it from dataframe to table</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">flextable</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># change header labels</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_header_labels</span>(<span class="at">df =</span> <span class="st">"Degrees of freedom"</span>, </span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>                    <span class="at">sumsq =</span> <span class="st">"Sum of squares"</span>)</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>model_squares_table</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<div class="tabwid"><style>.cl-7b0fbc04{}.cl-7b0ccf30{font-family:'Helvetica';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-7b0e0cec{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-7b0e0cf6{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-7b0e15ac{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-7b0e15ad{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-7b0e15ae{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-7b0e15b6{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-7b0e15b7{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-7b0e15b8{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-7b0fbc04"><thead><tr style="overflow-wrap:break-word;"><th class="cl-7b0e15ac"><p class="cl-7b0e0cec"><span class="cl-7b0ccf30">term</span></p></th><th class="cl-7b0e15ad"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">Degrees of freedom</span></p></th><th class="cl-7b0e15ad"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">Sum of squares</span></p></th><th class="cl-7b0e15ad"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">meansq</span></p></th><th class="cl-7b0e15ad"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">statistic</span></p></th><th class="cl-7b0e15ac"><p class="cl-7b0e0cec"><span class="cl-7b0ccf30">p.value</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-7b0e15ae"><p class="cl-7b0e0cec"><span class="cl-7b0ccf30">stem_length</span></p></td><td class="cl-7b0e15b6"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">1</span></p></td><td class="cl-7b0e15b6"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">0.0008864214</span></p></td><td class="cl-7b0e15b6"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">0.00088642137</span></p></td><td class="cl-7b0e15b6"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">25.08876</span></p></td><td class="cl-7b0e15ae"><p class="cl-7b0e0cec"><span class="cl-7b0ccf30">&lt; 0.001</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-7b0e15b7"><p class="cl-7b0e0cec"><span class="cl-7b0ccf30">Residuals</span></p></td><td class="cl-7b0e15b8"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">118</span></p></td><td class="cl-7b0e15b8"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">0.0041691066</span></p></td><td class="cl-7b0e15b8"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30">0.00003533141</span></p></td><td class="cl-7b0e15b8"><p class="cl-7b0e0cf6"><span class="cl-7b0ccf30"></span></p></td><td class="cl-7b0e15b7"><p class="cl-7b0e0cec"><span class="cl-7b0ccf30"></span></p></td></tr></tbody></table></div>
+</div>
+</div>
+</section>
 </section>
 
 </main>
