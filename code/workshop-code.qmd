@@ -82,7 +82,7 @@ plot(maples_model)
 
 turn off the 2x2 grid:
 
-```{r turning-off-the-grid}
+```{r turning-off-the-grid, results = FALSE}
 
 dev.off()
 
